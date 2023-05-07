@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\ConfirmOrderRequest;
 use App\Http\Resources\OrderResource;
 use App\Models\AddToCart;
+use App\Models\Customer;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Payment;
@@ -71,7 +72,36 @@ class OrderController extends Controller
 
     public function confirm_order(ConfirmOrderRequest $request){
         $confirmInfo = $request->validated();
-        return response()->json($confirmInfo);
+        $order = Order::find($confirmInfo['order_id']);
+        $authCustomer = Customer::find(Auth::id());
+        $orderPayment = Payment::where('order_id', $confirmInfo['order_id'])->first();
+
+        $authCustomer->phone_number = $confirmInfo['phone_number'];
+        $authCustomer->shipping_address = $confirmInfo['shipping_address'];
+        $authCustomer->update();
+
+        $orderPayment->status = '1';
+        if($request->hasFile('payment_photo')){
+            $fileName = uniqid().':'.$request->file('payment_photo')->getClientOriginalExtension();
+            $request->file('payment_photo')->storeAs('public/paymentPhoto', $fileName);
+            $orderPayment->payment_photo = $fileName;
+        }
+        $orderPayment->update();
+
+        $order->status = '1';
+        $order->update();
+
+        return response()->json(['success' => true, 'message' => 'order was confirmed']);
+    }
+
+    public function confirm_payment ($order_id){
+        $order = Order::where('order_id', $order_id)->where('customer_id', Auth::id())->first();
+        $order->status = '2';
+        $order->update();
+        $orderPayment = Payment::where('order_id', $order->order_id)->first();
+        $orderPayment->status = '2';
+        $orderPayment->update();
+        return response()->json(['success' => true, 'message' => $order->order_number.'order number was payment confirmed']);
     }
 
 }

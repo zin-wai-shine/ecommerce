@@ -18,7 +18,7 @@ return new class extends Migration
             $table->foreignId('order_id');
             $table->bigInteger('total_amount');
             $table->longText('payment_photo');
-            $table->enum('status', [0,1])->default(0);
+            $table->enum('status', [0,1,2])->default(0);
             $table->timestamps();
         });
     }

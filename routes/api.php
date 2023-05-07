@@ -193,6 +193,7 @@ Route::group(['prefix' => 'v1'],function(){
                     Route::get('/request_order', [$customerOrder, 'request_order']);
                     Route::get('/orders', [$customerOrder, 'orders']);
                     Route::post('/confirm_order', [$customerOrder, 'confirm_order']);
+                    Route::get('/confirm_payment/{order_id}', [$customerOrder, 'confirm_payment']);
             });
 
     });
